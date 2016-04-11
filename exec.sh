@@ -1,5 +1,7 @@
 #!/bin/bash
-source /afs/cern.ch/user/w/wyjang/amsvar_gcc.sh
-source /afs/cern.ch/user/w/wyjang/AMS-ACsoft/scripts/thisacsoft.sh
+export USERNAME=`whoami`
+export PWD=`pwd`
+source /afs/cern.ch/user/${USERNAME:0:1}/$USERNAME/amsvar_gcc.sh
+source /afs/cern.ch/user/${USERNAME:0:1}/$USERNAME/AMS-ACsoft/scripts/thisacsoft.sh
 
-/afs/cern.ch/work/w/wyjang/Pass6/bin/main $1 $2
+$PWD/bin/main $1 $2
