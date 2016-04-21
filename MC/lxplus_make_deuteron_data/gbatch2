@@ -1,0 +1,81 @@
+#!/bin/bash
+
+source /afs/cern.ch/user/s/sikang/amsvar_bash
+source /afs/cern.ch/user/s/sikang/setup.sh
+source /afs/cern.ch/user/s/sikang/AMS-ACsoft/scripts/thisacsoft.sh
+
+gcc_config_version=4.8.0
+mpfr_config_version=3.1.2
+gmp_config_version=5.1.1
+qt_config_version=4.8.4
+LCGPLAT=x86_64-slc6
+LCG_lib_name=lib64
+
+LCG_contdir=/afs/cern.ch/sw/lcg/contrib
+LCG_gcc_home=${LCG_contdir}/gcc/${gcc_config_version}/${LCGPLAT}
+LCG_mpfr_home=${LCG_contdir}/mpfr/${mpfr_config_version}/${LCGPLAT}
+LCG_gmp_home=${LCG_contdir}/gmp/${gmp_config_version}/${LCGPLAT}
+
+LCG_externaldir=/afs/cern.ch/sw/lct/external
+LCG_qt_home=${LCG_externaldir}/qt/${qt_config/version}/${LCGPLAT}
+
+ACQT_home=/afs/cern.ch/user/s/sikang/AMS-ACsoft
+
+#export ROOTSYS=/afs/cern.ch/sw/lcg/app/releases/ROOT/5.34.09/x86_64-slc6-gcc46-opt/root
+export ROOTSYS=/afs/cern.ch/ams/Offline/AMSsoft/linux_slc6_gcc64/root_v5.34ams/
+export PATH=${LCG_gcc_home}/bin:${PATH}
+
+if [ $LD_LIBRARY_PATH ]; then
+  export LD_LIBRARY_PATH=${LCG_gcc_home}/include/c++/4.6.3:${LCG_gcc_home}/${LCG_lib_name}:${LCG_mpfr_home}/lib:${LCG_gmp_home}/lib:${ROOTSYS}/lib:${LCG_qt_home}/lib:${ACQT_home}/lib:${LD_LIBRARY_PATH}
+else
+  export LD_LIBRARY_PATH=${LCG_gcc_home}/include/c++/4.6.3:${LCG_gcc_home}/${LCG_lib_name}:${LCG_mpfr_home}/lib:${LCG_gmp_home}/lib:${ROOTSYS}/lib:${LCG_qt_home}/lib:${ACQT_home}/lib
+fi
+
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/afs/cern.ch/user/s/sikang/AMS/lib/linuxx8664gcc5.34
+
+#WDDIR=/afs/cern.ch/work/j/jyang
+#CMDEXE=${WDDIR}/PartSel_v3/PartSel_v3
+#LISTPREFIX=${WDDIR}/B620.FileList/
+#OUTSPREFIX=${WDDIR}/PartSel_v3/Output_$2/
+WDDIR=/afs/cern.ch/work/s/sikang
+CMDEXE="${WDDIR}/background_study/Deuteron_MC/Deuteron_MC"
+LISTPREFIX=${WDDIR}/MC.FileList/d.FileList/
+#LISTPREFIX="${WDDIR}/MC.FileList/aachen.d.FileList/"
+OUTSPREFIX="${WDDIR}/background_study/Deuteron_MC/result/Output_$2/"
+
+declare -i job=$1
+# determine number of leading zeros
+if [ $job -lt 10 ]
+then
+  zeros=0000000
+  break	
+elif [ $job -lt 100 ]
+then
+  zeros=000000
+elif [ $job -lt 1000 ]
+then
+  zeros=00000
+elif [ $job -lt 10000 ]
+then
+  zeros=0000
+elif [ $job -lt 100000 ]
+then
+  zeros=000
+elif [ $job -lt 1000000 ]
+then
+  zeros=00
+elif [ $job -lt 10000000 ]
+then
+  zeros=0 
+else
+  zeros= 
+fi
+
+# build file names
+iputfile="$LISTPREFIX$zeros$job"
+oputfile="$OUTSPREFIX$zeros$job"
+logfile="$LOGPREFITX$zeros$job" 
+ 
+# submit jobs
+echo "executing $CMDEXE $iputfile $oputfile.root "
+$CMDEXE $iputfile $oputfile.root $oputfile.log 

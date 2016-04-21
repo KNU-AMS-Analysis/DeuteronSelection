@@ -1,0 +1,65 @@
+#!/bin/bash
+
+E_BADARGS=65
+
+cmd_bsub=/usr/bin/bsub
+USRNAME=`whoami`
+ANAEXE="/afs/cern.ch/work/${USRNAME:0:1}/$USRNAME/background_study/Deuteron_MC/gbatch2"
+#OUTDIR="/afs/cern.ch/work/${USRNAME:0:1}/$USRNAME/PartSel_v3/Output_"$1
+OUTDIR="/afs/cern.ch/work/${USRNAME:0:1}/$USRNAME/background_study/Deuteron_MC/result/Output_"$1
+#OUTDIR='/afs/cern.ch/work/s/solim/PartSel_v3/Output_'$1
+LOGDIR=$OUTDIR/log
+ERRDIR=$OUTDIR/err
+LISTDIR="/afs/cern.ch/work/${USRNAME:0:1}/$USRNAME/MC.FileList/d.FileList/"
+RUNLIST="/afs/cern.ch/work/${USRNAME:0:1}/$USRNAME/MC.RunList/"
+#LISTDIR="/afs/cern.ch/work/${USRNAME:0:1}/$USRNAME/MC.FileList/aachen.d.FileList/"
+#RUNLIST="/afs/cern.ch/work/${USRNAME:0:1}/$USRNAME/MC.RunList/aachen/"
+
+if [ -d $LISTDIR ]; then
+  echo "Directory exists .. $LISTDIR"
+else 
+  echo "Directory does not exists .. $LISTDIR"
+fi 
+
+if [ -d $OUTDIR ]; then
+  echo "Output files will be located at $OUTDIR."
+else
+  mkdir $OUTDIR
+  echo "Warning : $OUTDIR is made to store output files."
+fi
+
+if [ -d $LOGDIR ]; then
+  echo "Log files will be stored at $LOGDIR"
+else
+  mkdir $LOGDIR
+  echo "Warning : $LOGDIR is made to store log files."
+fi
+
+if [ -d $ERRDIR ]; then
+  echo "Error logs will be stored at $ERRDIR"
+else
+  mkdir $ERRDIR
+  echo "Warning : $ERRDIR is made to store error logs."
+fi
+
+cd $LISTDIR
+
+if [ -r $RUNLIST$1 ]; then
+  echo "batch job with list $1 will be started"
+  NewList=$RUNLIST$1
+else
+  echo "Please check where is run list for job submission !!!!!!!!"
+  exit $E_BADARGS
+fi
+
+date
+
+while read irun 
+do
+    printf "%i \n" $irun
+    echo "executing $cmd_bsub -q ams1nd -n 1 $ANAEXE $irun"
+#    $cmd_bsub -o /dev/null -q ams1nd -n 1 $ANAEXE $irun
+     $cmd_bsub -J $irun -o $LOGDIR/$irun.log -e $ERRDIR/$irun.err -q ams1nd -n 1 $ANAEXE $irun $1
+    sleep 1
+
+done < "$NewList"
